@@ -137,7 +137,6 @@
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
-
     </style>
 </head>
 <body>
@@ -164,56 +163,74 @@
         </form>
 
         <div class="forgot-password">
+            <a href="Register.html">¿No tienes cuenta? Regístrate aquí</a>
+            <br>
             <a href="#" onclick="alert('Comunicate Con Diego Mendoza')">¿Olvidaste tu contraseña?</a>
         </div>
     </div>
 
-    <script>
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const messageDiv = document.getElementById('message');
-            
-            // Validación simple
-            if (username === 'admin' && password === '1234') {
-                showMessage('¡Inicio de sesión exitoso! Redirigiendo...', 'success');
-                
-                // Simular redirección después de 2 segundos
-                setTimeout(() => {
-                    // Aquí podrías redirigir a otra página:
-                    window.location.href = 'index.html';
-                }, 2000);
-                
-            } else {
-                showMessage('Usuario o contraseña incorrectos. Intenta nuevamente.', 'error');
-            }
-        });
+    <script src="js/users.js"></script> 
+    
+    <script>
+        // Función auxiliar para mostrar mensajes
+        function showMessage(text, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+            messageDiv.style.display = 'block';
+            
+            // Ocultar mensaje después de 5 segundos
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 5000);
+        }
 
-        function showMessage(text, type) {
-            const messageDiv = document.getElementById('message');
-            messageDiv.textContent = text;
-            messageDiv.className = `message ${type}`;
-            messageDiv.style.display = 'block';
-            
-            // Ocultar mensaje después de 5 segundos
-            setTimeout(() => {
-                messageDiv.style.display = 'none';
-            }, 5000);
-        }
+        // Lógica de inicio de sesión **CORREGIDA** para usar UserManager
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            // 1. Llamar a la función de login del módulo UserManager
+            const result = UserManager.login(username, password);
+            
+            if (result.success) {
+                showMessage('¡Inicio de sesión exitoso! Redirigiendo...', 'success');
+                
+// 2. Obtener los datos del usuario (que ya está logueado y guardado en localStorage)
+                const userData = UserManager.getUserData(username); 
 
-        // Agregar efecto de entrada suave
-        window.addEventListener('load', function() {
-            document.querySelector('.login-container').style.opacity = '0';
-            document.querySelector('.login-container').style.transform = 'translateY(20px)';
-            
-            setTimeout(() => {
-                document.querySelector('.login-container').style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-                document.querySelector('.login-container').style.opacity = '1';
-                document.querySelector('.login-container').style.transform = 'translateY(0)';
-            }, 100);
-        });
-    </script>
+                // 3. Definir la URL de redirección
+                let redirectUrl = 'index.html'; // Por defecto, va al chat
+                
+                // 4. Verificar si es Super Admin
+                if (userData && userData.isAdmin === true) {
+                    redirectUrl = 'AdminDashboard.html'; // Redirigir al Admin
+                }
+
+                // 5. Ejecutar la redirección después de un breve retraso
+                setTimeout(() => {
+                    window.location.href = redirectUrl;
+                }, 2000); 
+                
+            } else {
+                // Muestra el mensaje de error de UserManager (Usuario no encontrado / Contraseña incorrecta)
+                showMessage(result.message, 'error');
+            }
+        });
+
+        // El resto del código de la animación de entrada se mantiene, es bueno.
+        window.addEventListener('load', function() {
+            document.querySelector('.login-container').style.opacity = '0';
+            document.querySelector('.login-container').style.transform = 'translateY(20px)';
+            
+            setTimeout(() => {
+                document.querySelector('.login-container').style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                document.querySelector('.login-container').style.opacity = '1';
+                document.querySelector('.login-container').style.transform = 'translateY(0)';
+            }, 100);
+        });
+    </script>
 </body>
 </html>
